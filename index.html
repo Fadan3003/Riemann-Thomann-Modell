@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://fadan3003.github.io/css_main/style.css">
+    <link rel="stylesheet" href="questions/style.css">
+
+</head>
+<body>
+    <header>
+        <img 
+            src="https://th.bing.com/th/id/R.307e84c1fe45c8b35d1df1fa8027bb90?rik=f5VirOls8G2KPw&pid=ImgRaw&r=0" 
+            alt="Logo"
+            size="100px" 
+            width="100px" 
+            height="100px"
+        >
+
+        <h3>Fadan</h3>
+    
+    </header>
+
+    <div class="login">
+        <h1>Riemannn Kreuz</h1>
+        <h3>Liebe MoKo'ler, <br>
+            bitte beantwortet alle Fragen. Anschließend seht Ihr Eure Ergebnisse.
+        </h3>
+        <button onclick="firstPageSwitch()" >continue</button>
+    </div>
+
+    <script>
+        localStorage.setItem("distanz-nahe", 0);
+        localStorage.setItem("dauer-wechsel", 0);
+
+        firstPageSwitch = () => {
+            window.location.href = "questions/index-first-di.html";
+        }
+    </script>
+</body>
+</html>
