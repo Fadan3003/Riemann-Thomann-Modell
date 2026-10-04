@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dein Riemann-Kreuz</title>
+    <link rel="stylesheet" href="https://fadan3003.github.io/css_main/style.css">
+    <link rel="stylesheet" href="questions/style.css">
+    <style>
+        .tafel { max-width: 520px; margin: 16px auto; }
+        .tafel svg { display: block; width: 100%; height: auto; }
+        .tafel text { fill: currentColor; font-family: inherit; }
+        .pol { font-size: 26px; font-weight: bold; }
+        .tick { font-size: 12px; fill-opacity: .6; }
+
+        .gitter { stroke: currentColor; stroke-opacity: .15; stroke-width: 1; }
+        .achse  { stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
+        .pfeil  { fill: currentColor; }
+        .fuehrung { stroke: #e74c3c; stroke-width: 2; stroke-dasharray: 6 6; stroke-opacity: .8; }
+
+        #punkt { transition: transform 1s cubic-bezier(.2,.9,.3,1.2); }
+        #punkt circle.kern { fill: #e74c3c; stroke: #fff; stroke-width: 3; }
+        #punkt circle.ring { fill: none; stroke: #e74c3c; stroke-width: 2; transform-box: fill-box; transform-origin: center; animation: puls 1.8s ease-out infinite; }
+        @keyframes puls { from { transform: scale(1); opacity: .9; } to { transform: scale(2.6); opacity: 0; } }
+
+        .werte { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 10px 0 18px; text-align: center; }
+        .wert { padding: 12px; border-radius: 10px; background: rgba(128,128,128,.12); }
+        .wert b { display: block; font-size: 18px; }
+        .wert span { font-size: 14px; opacity: .8; }
+        #fazit { font-size: 18px; font-weight: bold; margin: 8px 0 18px; text-align: center; }
+    </style>
+</head>
+<body>
+    <header>
+        <img 
+            src="https://th.bing.com/th/id/R.307e84c1fe45c8b35d1df1fa8027bb90?rik=f5VirOls8G2KPw&pid=ImgRaw&r=0" 
+            alt="Logo"
+            size="100px" 
+            width="100px" 
+            height="100px"
+        >
+
+        <h3>Fadan</h3>
+    
+    </header>
+
+    <div class="login">
+        <h1>Riemannn Kreuz</h1>
+        <h3 style="text-align:center">Ergebnis</h3>
+
+        <div id="inhalt" style="display:none">
+            <div class="tafel">
+                <svg id="kreuz" viewBox="0 0 600 600" role="img" aria-label="Riemann-Kreuz mit deinem Ergebnis"></svg>
+            </div>
+
+            <p id="fazit"></p>
+
+            <div class="werte">
+                <div class="wert"><b id="wertX"></b><span id="textX"></span></div>
+                <div class="wert"><b id="wertY"></b><span id="textY"></span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MAX = 12;          // maximaler Ausschlag pro Achse
+        const C = 300;           // Mittelpunkt im SVG
+        const S = 20;            // Pixel pro Punkt (12 * 20 = 240 -> Platz für Beschriftung)
+        const NS = "http://www.w3.org/2000/svg";
+
+        const rawX = localStorage.getItem("distanz-nahe");   // + = Distanz (rechts), - = Nähe (links)
+        const rawY = localStorage.getItem("dauer-wechsel");  // + = Dauer (oben),     - = Wechsel (unten)
+
+        if (rawX === null && rawY === null) {
+            document.getElementById("leer").style.display = "block";
+        } else {
+            document.getElementById("inhalt").style.display = "block";
+            zeichne(Number(rawX) || 0, Number(rawY) || 0);
+        }
+
+        function el(name, attrs, parent, text) {
+            const e = document.createElementNS(NS, name);
+            for (const k in attrs) e.setAttribute(k, attrs[k]);
+            if (text !== undefined) e.textContent = text;
+            parent.appendChild(e);
+            return e;
+        }
+
+        function zeichne(dn, dw) {
+            const svg = document.getElementById("kreuz");
+            const x = Math.max(-MAX, Math.min(MAX, dn));
+            const y = Math.max(-MAX, Math.min(MAX, dw));
+            const px = C + x * S;
+            const py = C - y * S;
+
+            // Gitter + Skala
+            for (let i = -MAX; i <= MAX; i += 2) {
+                if (i === 0) continue;
+                el("line", { class: "gitter", x1: C + i * S, y1: C - MAX * S, x2: C + i * S, y2: C + MAX * S }, svg);
+                el("line", { class: "gitter", x1: C - MAX * S, y1: C + i * S, x2: C + MAX * S, y2: C + i * S }, svg);
+                if (i % 4 === 0) {
+                    el("text", { class: "tick", x: C + i * S, y: C + 18, "text-anchor": "middle" }, svg, Math.abs(i));
+                    el("text", { class: "tick", x: C - 10, y: C - i * S + 4, "text-anchor": "end" }, svg, Math.abs(i));
+                }
+            }
+
+            // Achsen mit Pfeilspitzen
+            el("line", { class: "achse", x1: C - MAX * S - 10, y1: C, x2: C + MAX * S + 10, y2: C }, svg);
+            el("line", { class: "achse", x1: C, y1: C - MAX * S - 10, x2: C, y2: C + MAX * S + 10 }, svg);
+            const L = MAX * S + 10;
+            el("polygon", { class: "pfeil", points: `${C+L},${C} ${C+L-12},${C-7} ${C+L-12},${C+7}` }, svg);
+            el("polygon", { class: "pfeil", points: `${C-L},${C} ${C-L+12},${C-7} ${C-L+12},${C+7}` }, svg);
+            el("polygon", { class: "pfeil", points: `${C},${C-L} ${C-7},${C-L+12} ${C+7},${C-L+12}` }, svg);
+            el("polygon", { class: "pfeil", points: `${C},${C+L} ${C-7},${C+L-12} ${C+7},${C+L-12}` }, svg);
+
+            // Pole
+            el("text", { class: "pol", x: C, y: 28, "text-anchor": "middle" }, svg, "Dauer");
+            el("text", { class: "pol", x: C, y: 586, "text-anchor": "middle" }, svg, "Wechsel");
+            el("text", { class: "pol", x: 8, y: C - 12, "text-anchor": "start" }, svg, "Nähe");
+            el("text", { class: "pol", x: 592, y: C - 12, "text-anchor": "end" }, svg, "Distanz");
+
+            // Führungslinien zu den Achsen
+            el("line", { class: "fuehrung", x1: px, y1: py, x2: px, y2: C }, svg);
+            el("line", { class: "fuehrung", x1: px, y1: py, x2: C, y2: py }, svg);
+
+            // Ergebnis-Punkt (startet in der Mitte, fährt an seine Position)
+            const punkt = el("g", { id: "punkt" }, svg);
+            el("circle", { class: "ring", cx: 0, cy: 0, r: 10 }, punkt);
+            el("circle", { class: "kern", cx: 0, cy: 0, r: 10 }, punkt);
+            punkt.style.transform = `translate(${C}px, ${C}px)`;
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                punkt.style.transform = `translate(${px}px, ${py}px)`;
+            }));
+
+            // Texte
+            const poleX = dn > 0 ? "Distanz" : dn < 0 ? "Nähe" : null;
+            const poleY = dw > 0 ? "Dauer" : dw < 0 ? "Wechsel" : null;
+            const fmt = v => Math.abs(v).toString().replace(".", ",");
+
+            document.getElementById("wertX").textContent = poleX ? `${fmt(dn)} Punkte ${poleX}` : "Ausgeglichen";
+            document.getElementById("textX").textContent = "Nähe ↔ Distanz";
+            document.getElementById("wertY").textContent = poleY ? `${fmt(dw)} Punkte ${poleY}` : "Ausgeglichen";
+            document.getElementById("textY").textContent = "Dauer ↔ Wechsel";
+
+        }
+    </script>
+</body>
+</html>
