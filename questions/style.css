@@ -1,0 +1,33 @@
+.option {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.option input[type="radio"] {
+    width: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.option label {
+    width: auto !important;
+    margin: 0 !important;
+}
+
+.login h2 {
+    text-align: center;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+}
+
+header h3 {
+    margin: 0;
+}
